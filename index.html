@@ -1,0 +1,372 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار Simulink</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e0e7ff, #ccfbf1);
+    color: #1e293b;
+}
+
+.container {
+    width: 100%;
+    max-width: 650px;
+    background: white;
+    padding: 28px;
+    border-radius: 22px;
+    box-shadow: 0 10px 40px #00000015;
+}
+
+h1 {
+    color: #4338ca;
+    text-align: center;
+}
+
+.center {
+    text-align: center;
+    line-height: 1.9;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 22px 0 10px;
+}
+
+.progress-bar {
+    height: 9px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    width: 0;
+    height: 100%;
+    background: #6366f1;
+    transition: width 0.3s;
+}
+
+.question {
+    font-size: 21px;
+    line-height: 1.8;
+    margin-top: 25px;
+}
+
+.math {
+    direction: ltr;
+    text-align: center;
+    font-size: 25px;
+    margin: 18px 0;
+}
+
+.answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.answer {
+    padding: 16px;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 17px;
+    text-align: right;
+    cursor: pointer;
+    color: #1e293b;
+}
+
+.answer:hover:not(:disabled) {
+    background: #eef2ff;
+    border-color: #818cf8;
+}
+
+.answer:disabled {
+    cursor: default;
+}
+
+.answer.correct {
+    background: #dcfce7;
+    border-color: #22c55e;
+}
+
+.answer.wrong {
+    background: #fee2e2;
+    border-color: #ef4444;
+}
+
+.feedback {
+    line-height: 1.9;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.main-button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 12px;
+    background: #4f46e5;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.main-button:hover {
+    background: #4338ca;
+}
+
+.emoji {
+    text-align: center;
+    font-size: 60px;
+}
+
+.result-score {
+    font-size: 42px;
+    color: #4f46e5;
+    font-weight: bold;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 20px;
+    }
+
+    .answers {
+        grid-template-columns: 1fr;
+    }
+
+    .question {
+        font-size: 19px;
+    }
+}
+</style>
+</head>
+
+<body>
+<main class="container">
+
+    <section id="welcome" class="center">
+        <div class="emoji">🎓</div>
+        <h1>اختبار Simulink</h1>
+        <p>اختبر معلوماتك حول بلوكات Simulink والأعداد العقدية.</p>
+        <p>📝 عدد الأسئلة: 3</p>
+        <p>🏆 العلامة النهائية: 3 نقاط</p>
+        <button class="main-button" onclick="startQuiz()">
+            ابدأ الاختبار 🚀
+        </button>
+    </section>
+
+    <section id="quiz" hidden>
+        <h1>🧠 اختبار Simulink</h1>
+
+        <div class="progress-info">
+            <span id="question-count"></span>
+            <span>النقاط: <span id="score">0</span></span>
+        </div>
+
+        <div class="progress-bar">
+            <div id="progress" class="progress"></div>
+        </div>
+
+        <h2 id="question" class="question"></h2>
+        <div id="math" class="math" hidden></div>
+        <div id="answers" class="answers"></div>
+        <p id="feedback" class="feedback" aria-live="polite"></p>
+
+        <button id="next" class="main-button"
+                onclick="nextQuestion()" hidden>
+            السؤال التالي ←
+        </button>
+    </section>
+
+    <section id="result" class="center" hidden>
+        <div id="result-emoji" class="emoji">🏆</div>
+        <h1>انتهى الاختبار!</h1>
+        <p>نتيجتك النهائية:</p>
+        <div id="final-score" class="result-score"></div>
+        <p id="result-message"></p>
+        <button class="main-button" onclick="startQuiz()">
+            🔄 إعادة الاختبار
+        </button>
+    </section>
+
+</main>
+
+<script>
+const questions = [
+    {
+        question: "السؤال الأول: ما هو البلوك المستخدم لإدخال نسق ؟",
+        answers: ["Constant", "Gain", "Add", "Mux"],
+        correct: 0,
+        explanation: "بلوك Constant يُستخدم لإنتاج قيمة ثابتة."
+    },
+    {
+        question: "السؤال الثاني: ما هي وظيفة البلوك Mux؟",
+        answers: [
+            "استخلاص إشارة الدخل وتوزيعها على منافذ الخرج",
+            "تجميع إشارات الدخل في إشارة واحدة للخرج",
+            "جمع الإشارات حسابياً",
+            "عرض الإشارات"
+        ],
+        correct: 1,
+        explanation: "يجمع Mux إشارات الدخل في إشارة واحدة، ولا يجمع قيمها حسابياً."
+    },
+    {
+        question: "السؤال الثالث والأخير: ما ناتج ضرب العددين العقديين؟",
+        math: "(3 + 2i) × (2 + 4i)",
+        answers: [
+            "-2 + 16i",
+            "14 + 16i",
+            "6 + 8i",
+            "-2 + 10i"
+        ],
+        correct: 0,
+        explanation: "الناتج الصحيح هو -2 + 16i لأن i² = -1."
+    }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+const welcome = document.getElementById("welcome");
+const quiz = document.getElementById("quiz");
+const result = document.getElementById("result");
+
+function startQuiz() {
+    current = 0;
+    score = 0;
+
+    welcome.hidden = true;
+    result.hidden = true;
+    quiz.hidden = false;
+
+    document.getElementById("score").textContent = score;
+    showQuestion();
+}
+
+function showQuestion() {
+    answered = false;
+
+    const q = questions[current];
+
+    document.getElementById("question-count").textContent =
+        `السؤال ${current + 1} من ${questions.length}`;
+
+    document.getElementById("progress").style.width =
+        `${(current / questions.length) * 100}%`;
+
+    document.getElementById("question").textContent = q.question;
+
+    const math = document.getElementById("math");
+    math.hidden = !q.math;
+    math.textContent = q.math || "";
+
+    const answers = document.getElementById("answers");
+    answers.replaceChildren();
+
+    document.getElementById("feedback").textContent = "";
+    document.getElementById("next").hidden = true;
+
+    q.answers.forEach((answer, index) => {
+        const button = document.createElement("button");
+        button.className = "answer";
+        button.textContent =
+            `${["أ", "ب", "ج", "د"][index]}. ${answer}`;
+
+        button.addEventListener("click", () => {
+            checkAnswer(index, button);
+        });
+
+        answers.appendChild(button);
+    });
+}
+
+function checkAnswer(index, selectedButton) {
+    if (answered) return;
+    answered = true;
+
+    const q = questions[current];
+    const buttons = document.querySelectorAll(".answer");
+
+    buttons.forEach(button => button.disabled = true);
+    buttons[q.correct].classList.add("correct");
+
+    const feedback = document.getElementById("feedback");
+
+    if (index === q.correct) {
+        score++;
+        document.getElementById("score").textContent = score;
+        feedback.textContent = "✅ إجابة صحيحة! " + q.explanation;
+        feedback.style.color = "#15803d";
+    } else {
+        selectedButton.classList.add("wrong");
+        feedback.textContent = "❌ إجابة خاطئة. " + q.explanation;
+        feedback.style.color = "#b91c1c";
+    }
+
+    const next = document.getElementById("next");
+    next.hidden = false;
+    next.textContent = current === questions.length - 1
+        ? "عرض النتيجة 🏆"
+        : "السؤال التالي ←";
+}
+
+function nextQuestion() {
+    current++;
+
+    if (current < questions.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    quiz.hidden = true;
+    result.hidden = false;
+
+    document.getElementById("final-score").textContent =
+        `${score} / ${questions.length}`;
+
+    document.getElementById("progress").style.width = "100%";
+
+    document.getElementById("result-emoji").textContent =
+        score === 3 ? "🏆" : score === 2 ? "👏" : "💡";
+
+    document.getElementById("result-message").textContent =
+        score === 3
+            ? "ممتاز! أجبت عن جميع الأسئلة بشكل صحيح."
+            : score === 2
+            ? "أحسنت، نتيجة جيدة"
+            : "حاول مرة أخرى لتحسين نتيجتك.";
+}
+</script>
+
+</body>
+</html>
+```
