@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,9 +7,7 @@
 <title>اختبار Simulink</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -32,14 +30,16 @@ body {
     box-shadow: 0 10px 40px #00000015;
 }
 
-h1 {
-    color: #4338ca;
-    text-align: center;
-}
+h1 { color: #4338ca; text-align: center; }
+.center { text-align: center; line-height: 1.9; }
 
-.center {
-    text-align: center;
-    line-height: 1.9;
+.student-input {
+    width: 100%;
+    padding: 13px;
+    margin: 10px 0;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 17px;
 }
 
 .progress-info {
@@ -98,9 +98,7 @@ h1 {
     border-color: #818cf8;
 }
 
-.answer:disabled {
-    cursor: default;
-}
+.answer:disabled { cursor: default; }
 
 .answer.correct {
     background: #dcfce7;
@@ -131,14 +129,9 @@ h1 {
     cursor: pointer;
 }
 
-.main-button:hover {
-    background: #4338ca;
-}
+.main-button:hover { background: #4338ca; }
 
-.emoji {
-    text-align: center;
-    font-size: 60px;
-}
+.emoji { text-align: center; font-size: 60px; }
 
 .result-score {
     font-size: 42px;
@@ -146,22 +139,12 @@ h1 {
     font-weight: bold;
 }
 
-[hidden] {
-    display: none !important;
-}
+[hidden] { display: none !important; }
 
 @media (max-width: 480px) {
-    .container {
-        padding: 20px;
-    }
-
-    .answers {
-        grid-template-columns: 1fr;
-    }
-
-    .question {
-        font-size: 19px;
-    }
+    .container { padding: 20px; }
+    .answers { grid-template-columns: 1fr; }
+    .question { font-size: 19px; }
 }
 </style>
 </head>
@@ -175,6 +158,18 @@ h1 {
         <p>اختبر معلوماتك حول بلوكات Simulink والأعداد العقدية.</p>
         <p>📝 عدد الأسئلة: 3</p>
         <p>🏆 العلامة النهائية: 3 نقاط</p>
+
+        <label for="student-name"><strong>اسم الطالب الكامل:</strong></label>
+        <input
+            id="student-name"
+            class="student-input"
+            type="text"
+            placeholder="اكتب اسمك هنا"
+            autocomplete="name"
+            maxlength="100"
+            required
+        >
+
         <button class="main-button" onclick="startQuiz()">
             ابدأ الاختبار 🚀
         </button>
@@ -206,9 +201,37 @@ h1 {
     <section id="result" class="center" hidden>
         <div id="result-emoji" class="emoji">🏆</div>
         <h1>انتهى الاختبار!</h1>
+        <p id="student-result-name"></p>
         <p>نتيجتك النهائية:</p>
         <div id="final-score" class="result-score"></div>
         <p id="result-message"></p>
+
+        <form
+            id="result-form"
+            action="https://formsubmit.co/ebtesamahmad2000@gmail.com"
+            method="POST"
+            target="_blank"
+        >
+            <input type="hidden" name="_subject"
+                   value="نتيجة اختبار Simulink">
+
+            <input type="hidden" name="_template"
+                   value="table">
+
+            <input type="hidden" name="اسم الطالب"
+                   id="email-student-name">
+
+            <input type="hidden" name="العلامة"
+                   id="email-score">
+
+            <input type="hidden" name="العلامة الكاملة"
+                   value="3 من 3">
+
+            <button type="submit" class="main-button">
+                📩 إرسال النتيجة إلى المعلمة
+            </button>
+        </form>
+
         <button class="main-button" onclick="startQuiz()">
             🔄 إعادة الاختبار
         </button>
@@ -252,12 +275,23 @@ const questions = [
 let current = 0;
 let score = 0;
 let answered = false;
+let studentName = "";
 
 const welcome = document.getElementById("welcome");
 const quiz = document.getElementById("quiz");
 const result = document.getElementById("result");
 
 function startQuiz() {
+    const nameInput = document.getElementById("student-name");
+    const enteredName = nameInput.value.trim();
+
+    if (!enteredName) {
+        alert("يرجى كتابة اسم الطالب قبل بدء الاختبار.");
+        nameInput.focus();
+        return;
+    }
+
+    studentName = enteredName;
     current = 0;
     score = 0;
 
@@ -271,7 +305,6 @@ function startQuiz() {
 
 function showQuestion() {
     answered = false;
-
     const q = questions[current];
 
     document.getElementById("question-count").textContent =
@@ -350,6 +383,9 @@ function showResult() {
     quiz.hidden = true;
     result.hidden = false;
 
+    document.getElementById("student-result-name").textContent =
+        "اسم الطالب: " + studentName;
+
     document.getElementById("final-score").textContent =
         `${score} / ${questions.length}`;
 
@@ -362,11 +398,16 @@ function showResult() {
         score === 3
             ? "ممتاز! أجبت عن جميع الأسئلة بشكل صحيح."
             : score === 2
-            ? "أحسنت، نتيجة جيدة"
+            ? "أحسنت، نتيجة جيدة."
             : "حاول مرة أخرى لتحسين نتيجتك.";
+
+    document.getElementById("email-student-name").value =
+        studentName;
+
+    document.getElementById("email-score").value =
+        `${score} / ${questions.length}`;
 }
 </script>
 
 </body>
 </html>
-```
