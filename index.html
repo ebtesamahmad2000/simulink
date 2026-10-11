@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -231,10 +231,6 @@ h1 { color: #4338ca; text-align: center; }
                 📩 إرسال النتيجة إلى المعلمة
             </button>
         </form>
-
-        <button class="main-button" onclick="startQuiz()">
-            🔄 إعادة الاختبار
-        </button>
     </section>
 
 </main>
@@ -399,7 +395,7 @@ function showResult() {
             ? "ممتاز! أجبت عن جميع الأسئلة بشكل صحيح."
             : score === 2
             ? "أحسنت، نتيجة جيدة."
-            : "حاول مرة أخرى لتحسين نتيجتك.";
+            : "انتهى الاختبار. شكرًا لمشاركتك.";
 
     document.getElementById("email-student-name").value =
         studentName;
@@ -411,3 +407,4 @@ function showResult() {
 
 </body>
 </html>
+```
