@@ -31,7 +31,6 @@
         h1 {
             color: #2563eb;
             text-align: center;
-            margin-bottom: 10px;
         }
 
         .subtitle {
@@ -40,7 +39,7 @@
             margin-bottom: 25px;
         }
 
-        label {
+        .student-label {
             display: block;
             font-weight: bold;
             margin-bottom: 8px;
@@ -60,7 +59,7 @@
             border-radius: 12px;
             padding: 18px;
             margin-bottom: 20px;
-            background: #ffffff;
+            background: white;
         }
 
         .question h3 {
@@ -75,7 +74,8 @@
             border-radius: 8px;
             background: #f8fafc;
             cursor: pointer;
-            line-height: 1.7;
+            line-height: 1.8;
+            font-weight: normal;
         }
 
         .answer:hover {
@@ -84,6 +84,27 @@
 
         .answer input {
             margin-left: 8px;
+        }
+
+        .correction {
+            display: none;
+            font-weight: bold;
+            line-height: 1.9;
+            margin-top: 14px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .correct {
+            display: block;
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .incorrect {
+            display: block;
+            color: #991b1b;
+            background: #fee2e2;
         }
 
         button {
@@ -113,6 +134,11 @@
 
         .email-button:hover {
             background: #047857;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .result {
@@ -165,7 +191,9 @@
 
     <form id="quizForm">
 
-        <label for="studentName">اسم الطالب:</label>
+        <label class="student-label" for="studentName">
+            اسم الطالب:
+        </label>
 
         <input
             type="text"
@@ -200,6 +228,8 @@
                 <input type="radio" name="q1" value="3">
                 د) حساب نسبة الخرج إلى الدخل في مستوى لابلاس.
             </label>
+
+            <p class="correction" id="correction1"></p>
         </div>
 
         <div class="question">
@@ -227,6 +257,8 @@
                 <input type="radio" name="q2" value="3">
                 د) n+1 عنصر تكامل.
             </label>
+
+            <p class="correction" id="correction2"></p>
         </div>
 
         <div class="question">
@@ -255,10 +287,12 @@
                 <input type="radio" name="q3" value="3">
                 د) الفرق بين إشارة الدخل وإشارة الخرج.
             </label>
+
+            <p class="correction" id="correction3"></p>
         </div>
 
         <button type="submit" class="main-button">
-            عرض النتيجة
+            عرض النتيجة والتصحيح
         </button>
 
     </form>
@@ -267,9 +301,7 @@
         <h2>نتيجتك في الاختبار الثاني</h2>
 
         <p id="studentResult"></p>
-
         <p id="scoreResult"></p>
-
         <p id="feedback"></p>
 
         <button
@@ -282,8 +314,7 @@
         </button>
 
         <p class="notice">
-            إذا لم يفتح برنامج البريد الإلكتروني، يمكنك استخدام زر الإرسال
-            أعلاه لمحاولة إرسال النتيجة عبر النموذج.
+            اضغط على زر إرسال النتيجة لإرسال علامتك إلى المعلمة.
         </p>
 
         <p id="sendStatus" aria-live="polite"></p>
@@ -292,68 +323,131 @@
 </div>
 
 <script>
+    // الإجابات الصحيحة
     const correctAnswers = {
         q1: "1",
         q2: "2",
         q3: "2"
     };
 
+    // نص الإجابات الصحيحة التي ستظهر للطالب
+    const correctLabels = {
+        q1: "ب) حساب التكامل لإشارة الدخل المستمرة زمنياً.",
+        q2: "ج) n عناصر تكامل.",
+        q3: "ج) نسبة إشارة الخرج إلى إشارة الدخل."
+    };
+
     let finalScore = 0;
     let student = "";
 
-    document.getElementById("quizForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+    document.getElementById("quizForm").addEventListener(
+        "submit",
+        function(event) {
+            event.preventDefault();
 
-        student = document.getElementById("studentName").value.trim();
+            student = document
+                .getElementById("studentName")
+                .value.trim();
 
-        if (!student) {
-            alert("يرجى إدخال اسم الطالب.");
-            return;
-        }
-
-        finalScore = 0;
-
-        for (const question in correctAnswers) {
-            const selected = document.querySelector(
-                'input[name="' + question + '"]:checked'
-            );
-
-            if (selected && selected.value === correctAnswers[question]) {
-                finalScore++;
+            if (!student) {
+                alert("يرجى إدخال اسم الطالب.");
+                return;
             }
+
+            finalScore = 0;
+
+            // حساب العلامة
+            for (const question in correctAnswers) {
+                const selected = document.querySelector(
+                    'input[name="' + question + '"]:checked'
+                );
+
+                if (
+                    selected &&
+                    selected.value === correctAnswers[question]
+                ) {
+                    finalScore++;
+                }
+            }
+
+            // إظهار التصحيح تحت كل سؤال
+            for (let i = 1; i <= 3; i++) {
+                const questionName = "q" + i;
+
+                const selected = document.querySelector(
+                    'input[name="' + questionName + '"]:checked'
+                );
+
+                const correction = document.getElementById(
+                    "correction" + i
+                );
+
+                correction.className = "correction";
+
+                if (
+                    selected.value === correctAnswers[questionName]
+                ) {
+                    correction.textContent =
+                        "✅ إجابة صحيحة! أحسنت.";
+
+                    correction.classList.add("correct");
+                } else {
+                    correction.textContent =
+                        "❌ إجابتك غير صحيحة. الإجابة الصحيحة هي: " +
+                        correctLabels[questionName];
+
+                    correction.classList.add("incorrect");
+                }
+            }
+
+            // عرض النتيجة
+            document.getElementById("studentResult").textContent =
+                "اسم الطالب: " + student;
+
+            document.getElementById("scoreResult").textContent =
+                "العلامة: " + finalScore + " من 3 (" +
+                Math.round((finalScore / 3) * 100) + "%)";
+
+            let feedback = "";
+
+            if (finalScore === 3) {
+                feedback = "ممتاز! جميع إجاباتك صحيحة. 🌟";
+            } else if (finalScore === 2) {
+                feedback = "جيد جداً! راجع التصحيح للتعلم من الخطأ.";
+            } else if (finalScore === 1) {
+                feedback = "تابع المراجعة واستفد من التصحيح.";
+            } else {
+                feedback = "راجع الدرس وتعلّم من الإجابات الصحيحة.";
+            }
+
+            document.getElementById("feedback").textContent =
+                feedback;
+
+            document.getElementById("result").style.display = "block";
+
+            document.getElementById("sendStatus").textContent = "";
+
+            // منع تغيير الإجابات بعد ظهور التصحيح
+            document.querySelectorAll(
+                '#quizForm input[type="radio"]'
+            ).forEach(function(input) {
+                input.disabled = true;
+            });
+
+            document.getElementById("studentName").readOnly = true;
+
+            document.querySelector(
+                '#quizForm button[type="submit"]'
+            ).disabled = true;
+
+            document.getElementById("result").scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
         }
+    );
 
-        document.getElementById("studentResult").textContent =
-            "اسم الطالب: " + student;
-
-        document.getElementById("scoreResult").textContent =
-            "العلامة: " + finalScore + " من 3 (" +
-            Math.round((finalScore / 3) * 100) + "%)";
-
-        let feedback = "";
-
-        if (finalScore === 3) {
-            feedback = "ممتاز! أجبت عن جميع الأسئلة بشكل صحيح. 🌟";
-        } else if (finalScore === 2) {
-            feedback = "جيد جداً! راجع الإجابات التي أخطأت فيها.";
-        } else if (finalScore === 1) {
-            feedback = "تابع المراجعة وحاول تعزيز فهمك للمفاهيم.";
-        } else {
-            feedback = "راجع الدرس وحاول الاستفادة من الأسئلة للتعلم.";
-        }
-
-        document.getElementById("feedback").textContent = feedback;
-
-        document.getElementById("result").style.display = "block";
-
-        document.getElementById("sendStatus").textContent = "";
-
-        document.getElementById("result").scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-    });
-
+    // إرسال النتيجة إلى المعلمة عبر FormSubmit
     async function sendResult() {
         const sendButton = document.getElementById("sendButton");
         const sendStatus = document.getElementById("sendStatus");
@@ -363,11 +457,16 @@
 
         const formData = new FormData();
 
-        formData.append("_subject", "نتيجة الاختبار الثاني في Simulink");
+        formData.append(
+            "_subject",
+            "نتيجة الاختبار الثاني في Simulink"
+        );
+
         formData.append("_template", "table");
         formData.append("اسم الطالب", student);
         formData.append("اسم الاختبار", "الاختبار الثاني");
         formData.append("العلامة", finalScore + " من 3");
+
         formData.append(
             "النسبة المئوية",
             Math.round((finalScore / 3) * 100) + "%"
@@ -390,15 +489,16 @@
             if (response.ok && data.success) {
                 sendStatus.textContent =
                     "تم إرسال النتيجة بنجاح إلى المعلمة. ✅";
+
                 sendStatus.className = "success";
             } else {
-                throw new Error("تعذّر تأكيد الإرسال.");
+                throw new Error("تعذر تأكيد الإرسال.");
             }
 
         } catch (error) {
             sendStatus.textContent =
-                "تعذّر تأكيد الإرسال. تحققي من اتصال الإنترنت، " +
-                "ومن تفعيل البريد الإلكتروني في FormSubmit، ثم حاولي مجدداً.";
+                "تعذر تأكيد الإرسال. تحققي من الإنترنت " +
+                "وتفعيل البريد في FormSubmit، ثم حاولي مجدداً.";
 
             sendStatus.className = "";
         } finally {
