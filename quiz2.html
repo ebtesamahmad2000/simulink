@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -180,17 +180,12 @@
 </head>
 
 <body>
-
 <div class="container">
 
     <h1>📝 الاختبار الثاني في Simulink</h1>
-
-    <p class="subtitle">
-        مكتبة العناصر المستمرة والتكامل وتابع النقل
-    </p>
+    <p class="subtitle">مكتبة العناصر المستمرة</p>
 
     <form id="quizForm">
-
         <label class="student-label" for="studentName">
             اسم الطالب:
         </label>
@@ -264,8 +259,7 @@
         <div class="question">
             <h3>
                 السؤال الثالث: ما العلاقة التي يعبّر عنها
-                صندوق تابع النقل (Transfer Function Block)
-                في مستوى لابلاس؟
+                صندوق تابع النقل (Transfer Function Block)؟
             </h3>
 
             <label class="answer">
@@ -294,7 +288,6 @@
         <button type="submit" class="main-button">
             عرض النتيجة والتصحيح
         </button>
-
     </form>
 
     <div class="result" id="result">
@@ -319,7 +312,6 @@
 
         <p id="sendStatus" aria-live="polite"></p>
     </div>
-
 </div>
 
 <script>
@@ -330,7 +322,7 @@
         q3: "2"
     };
 
-    // نص الإجابات الصحيحة التي ستظهر للطالب
+    // نص الإجابات الصحيحة
     const correctLabels = {
         q1: "ب) حساب التكامل لإشارة الدخل المستمرة زمنياً.",
         q2: "ج) n عناصر تكامل.",
@@ -344,6 +336,12 @@
         "submit",
         function(event) {
             event.preventDefault();
+
+            const form = document.getElementById("quizForm");
+
+            if (!form.reportValidity()) {
+                return;
+            }
 
             student = document
                 .getElementById("studentName")
@@ -382,9 +380,12 @@
                     "correction" + i
                 );
 
+                // إظهار رسالة التصحيح بشكل صريح
+                correction.style.display = "block";
                 correction.className = "correction";
 
                 if (
+                    selected &&
                     selected.value === correctAnswers[questionName]
                 ) {
                     correction.textContent =
@@ -400,7 +401,7 @@
                 }
             }
 
-            // عرض النتيجة
+            // عرض النتيجة النهائية
             document.getElementById("studentResult").textContent =
                 "اسم الطالب: " + student;
 
@@ -420,11 +421,8 @@
                 feedback = "راجع الدرس وتعلّم من الإجابات الصحيحة.";
             }
 
-            document.getElementById("feedback").textContent =
-                feedback;
-
+            document.getElementById("feedback").textContent = feedback;
             document.getElementById("result").style.display = "block";
-
             document.getElementById("sendStatus").textContent = "";
 
             // منع تغيير الإجابات بعد ظهور التصحيح
@@ -494,7 +492,6 @@
             } else {
                 throw new Error("تعذر تأكيد الإرسال.");
             }
-
         } catch (error) {
             sendStatus.textContent =
                 "تعذر تأكيد الإرسال. تحققي من الإنترنت " +
@@ -509,4 +506,3 @@
 
 </body>
 </html>
-```
